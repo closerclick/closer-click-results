@@ -1,0 +1,5 @@
+node_modules/
+# Estado runtime: clave de servicio (secreta) + overrides manuales.
+server/data/
+*.log
+.env

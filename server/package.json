@@ -1,0 +1,17 @@
+{
+  "name": "closer-click-results-server",
+  "version": "0.1.0",
+  "description": "results.closer.click — relay de resultados oficiales en vivo (ESPN + manual firmado), feed firmado para las apps del ecosistema CloserClick",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "seyacat",
+  "license": "MIT"
+}
