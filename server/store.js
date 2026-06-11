@@ -65,7 +65,11 @@ function applyOverrides(items, byPubkeyId, now) {
     for (const it of items || []) {
         if (!it || typeof it.home !== 'string' || typeof it.away !== 'string') continue;
         const k = matchKey({ home: it.home, away: it.away, kickoff: it.kickoff });
-        if (it.clear === true) {
+        // Sin dato (ni goles ni ganador) no hay nada que afirmar: se trata como
+        // `clear`. Un override vacío guardado taparía el dato real del proveedor
+        // en todos los clientes (pasó con MEX-RSA el 2026-06-10).
+        const empty = it.homeGoals == null && it.awayGoals == null && !it.winner;
+        if (it.clear === true || empty) {
             if (cache[k]) { delete cache[k]; changed++; }
             continue;
         }
