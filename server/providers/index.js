@@ -18,6 +18,12 @@ const PROVIDERS = ORDER.length ? ORDER : [espn, fifa];
 
 function rank(m) { return m.finished ? 3 : (m.started ? 2 : 1); }
 
+// Total de goles reportado (en vivo, el proveedor más al día es el que ya vio
+// el último gol). Sin marcador = -1 para que cualquier dato gane a la nada.
+function goalsOf(m) {
+    return (m.homeGoals == null && m.awayGoals == null) ? -1 : (m.homeGoals || 0) + (m.awayGoals || 0);
+}
+
 /** Trae de cada proveedor en paralelo; devuelve {id: {ok,count,matches,error,fetchedAt}}. */
 async function collect(opts) {
     const out = {};
@@ -35,8 +41,9 @@ async function collect(opts) {
 /**
  * Funde los proveedores en una sola lista. Por cada partido (matchKey), gana el
  * primer proveedor en ORDER que lo tenga; uno posterior solo lo reemplaza si trae
- * un estado MÁS avanzado (p.ej. ESPN aún 'in' y FIFA ya 'final'). Así "el mejor
- * proveedor por default, los demás de fallback".
+ * un estado MÁS avanzado (p.ej. ESPN aún 'in' y FIFA ya 'final') o, a igual
+ * estado, MÁS GOLES (en vivo, el proveedor más al día es el que ya vio el
+ * último gol; los marcadores solo crecen, así que más goles = más fresco).
  */
 function mergeProviders(results) {
     const byKey = new Map();
@@ -46,7 +53,9 @@ function mergeProviders(results) {
         for (const m of r.matches) {
             const k = matchKey(m);
             const cur = byKey.get(k);
-            if (!cur || rank(m) > rank(cur)) byKey.set(k, m);
+            if (!cur || rank(m) > rank(cur) || (rank(m) === rank(cur) && goalsOf(m) > goalsOf(cur))) {
+                byKey.set(k, m);
+            }
         }
     }
     return [...byKey.values()];
