@@ -34,6 +34,10 @@ const PRUNE_MS = 60 * 1000;
 // separados por coma. Vacío = nadie puede cargar overrides (solo proveedores).
 const ADMINS = (process.env.RESULTS_ADMIN_PUBKEYS || '')
     .split(',').map(s => s.trim()).filter(Boolean);
+// Thumbprints (pubkeyId hex) de los admins — públicos, se exponen en el feed para
+// que el cliente muestre el botón "Publicar" SOLO a un admin (la seguridad real
+// la da igual la verificación de firma + allowlist en POST /admin/result).
+const ADMIN_IDS = ADMINS.map(a => (/^[0-9a-f]{64}$/i.test(a) ? a.toLowerCase() : pubkeyId(a)));
 
 // Snapshot en memoria del último refresh de proveedores.
 let snapshot = { updatedAt: 0, providerResults: {}, matches: [] };
@@ -85,6 +89,7 @@ function buildFeed(source) {
         // (state of truth). El cliente aplica matches y luego overrides (ganan).
         matches,
         overrides,
+        admins: ADMIN_IDS,
         publickey: sign.pubJwkString,
     };
     return { data, signature: sign.signData(data) };
